@@ -7,7 +7,7 @@ import json
 import logging
 import os
 
-import bcrypt
+from passlib.hash import bcrypt
 from common.db import run_query
 from common.auth import create_token, verify_token, extract_token, ok, err
 
@@ -92,7 +92,7 @@ def _login(event):
         return err("Invalid credentials", 401)
 
     user = rows[0]
-    if not bcrypt.checkpw(password.encode(), user["password"].encode()):
+    if not bcrypt.verify(password, user["password"]):
         return err("Invalid credentials", 401)
 
     token = create_token(str(user["id"]), user["email"], user["role"])
@@ -128,7 +128,7 @@ def _register(event):
     if len(password) < 8:
         return err("Password must be at least 8 characters")
 
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    hashed = bcrypt.hash(password)
 
     try:
         run_query(
