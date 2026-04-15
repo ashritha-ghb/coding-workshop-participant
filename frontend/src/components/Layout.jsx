@@ -3,7 +3,8 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   Box, Drawer, AppBar, Toolbar, Typography, List, ListItem,
   ListItemButton, ListItemIcon, ListItemText, IconButton,
-  Avatar, Menu, MenuItem, Divider, Chip, useMediaQuery, useTheme,
+  Menu, MenuItem, Divider, Chip, useMediaQuery, useTheme,
+  Avatar, Tooltip, Stack,
 } from '@mui/material'
 import {
   Dashboard as DashboardIcon,
@@ -14,19 +15,19 @@ import {
   School as TrainingIcon,
   Menu as MenuIcon,
   Logout as LogoutIcon,
-  AccountCircle,
+  KeyboardArrowDown,
 } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
 
-const DRAWER_WIDTH = 240
+const DRAWER_WIDTH = 248
 
 const navItems = [
-  { label: 'Dashboard', path: '/', icon: <DashboardIcon /> },
-  { label: 'Employees', path: '/employees', icon: <PeopleIcon />, minRole: 'manager' },
-  { label: 'Performance Reviews', path: '/reviews', icon: <ReviewIcon /> },
-  { label: 'Development Plans', path: '/plans', icon: <PlanIcon /> },
-  { label: 'Competencies', path: '/competencies', icon: <CompIcon /> },
-  { label: 'Training Records', path: '/training', icon: <TrainingIcon /> },
+  { label: 'Dashboard', path: '/', icon: <DashboardIcon fontSize="small" /> },
+  { label: 'Employees', path: '/employees', icon: <PeopleIcon fontSize="small" />, minRole: 'manager' },
+  { label: 'Performance Reviews', path: '/reviews', icon: <ReviewIcon fontSize="small" /> },
+  { label: 'Development Plans', path: '/plans', icon: <PlanIcon fontSize="small" /> },
+  { label: 'Competencies', path: '/competencies', icon: <CompIcon fontSize="small" /> },
+  { label: 'Training Records', path: '/training', icon: <TrainingIcon fontSize="small" /> },
 ]
 
 const ROLE_COLORS = {
@@ -34,6 +35,16 @@ const ROLE_COLORS = {
   manager: 'warning',
   contributor: 'primary',
   viewer: 'default',
+}
+
+function getInitials(name) {
+  if (!name) return '?'
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
+
+function getAvatarColor(role) {
+  const colors = { admin: '#dc2626', manager: '#d97706', contributor: '#2563eb', viewer: '#64748b' }
+  return colors[role] || '#64748b'
 }
 
 export default function Layout() {
@@ -48,67 +59,119 @@ export default function Layout() {
   const visibleNav = navItems.filter(item => !item.minRole || hasRole(item.minRole))
 
   const drawer = (
-    <Box>
-      <Toolbar sx={{ px: 2 }}>
-        <Typography variant="h6" color="primary" fontWeight={700}>
-          ACME HR
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Logo */}
+      <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <Box
+            sx={{
+              width: 32, height: 32, borderRadius: 1.5,
+              background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Typography variant="caption" color="white" fontWeight={700}>A</Typography>
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" fontWeight={700} lineHeight={1.2}>ACME HR</Typography>
+            <Typography variant="caption" color="text.secondary" lineHeight={1}>Performance</Typography>
+          </Box>
+        </Stack>
+      </Box>
+
+      {/* Nav */}
+      <Box sx={{ flex: 1, px: 1.5, py: 2, overflowY: 'auto' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, mb: 1, display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Menu
         </Typography>
-      </Toolbar>
-      <Divider />
-      <List dense>
-        {visibleNav.map(item => (
-          <ListItem key={item.path} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => { navigate(item.path); setDrawerOpen(false) }}
-              sx={{ borderRadius: 1, mx: 1, my: 0.25 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+        <List dense disablePadding>
+          {visibleNav.map(item => {
+            const active = location.pathname === item.path
+            return (
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  selected={active}
+                  onClick={() => { navigate(item.path); setDrawerOpen(false) }}
+                  sx={{ borderRadius: 2, px: 1.5, py: 1 }}
+                >
+                  <ListItemIcon sx={{ minWidth: 32, color: active ? 'primary.main' : 'text.secondary' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: active ? 600 : 400 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )
+          })}
+        </List>
+      </Box>
+
+      {/* User section at bottom */}
+      <Box sx={{ px: 1.5, py: 2, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1, borderRadius: 2, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+          onClick={e => setAnchorEl(e.currentTarget)}
+        >
+          <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(user?.role), fontSize: '0.75rem' }}>
+            {getInitials(user?.full_name)}
+          </Avatar>
+          <Box flex={1} minWidth={0}>
+            <Typography variant="body2" fontWeight={600} noWrap>{user?.full_name}</Typography>
+            <Chip label={user?.role} size="small" color={ROLE_COLORS[user?.role] || 'default'} sx={{ height: 16, fontSize: '0.65rem' }} />
+          </Box>
+          <KeyboardArrowDown fontSize="small" sx={{ color: 'text.secondary' }} />
+        </Box>
+      </Box>
     </Box>
   )
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }} elevation={1}>
-        <Toolbar>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      <AppBar position="fixed" elevation={0} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+        <Toolbar sx={{ minHeight: '56px !important' }}>
           {isMobile && (
-            <IconButton color="inherit" edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 1 }}>
+            <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 1, color: 'text.primary' }}>
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Employee Performance Platform
+          <Typography variant="subtitle1" fontWeight={600} sx={{ flexGrow: 1, color: 'text.primary' }}>
+            {visibleNav.find(n => n.path === location.pathname)?.label || 'ACME HR Platform'}
           </Typography>
-          <Chip
-            label={user?.role}
-            size="small"
-            color={ROLE_COLORS[user?.role] || 'default'}
-            sx={{ mr: 2, textTransform: 'capitalize' }}
-          />
-          <IconButton color="inherit" onClick={e => setAnchorEl(e.currentTarget)}>
-            <AccountCircle />
-          </IconButton>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-            <MenuItem disabled>
-              <Typography variant="body2">{user?.full_name}</Typography>
-            </MenuItem>
-            <MenuItem disabled>
-              <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={() => { setAnchorEl(null); logout() }}>
-              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
-              Sign out
-            </MenuItem>
-          </Menu>
+          {!isMobile && (
+            <Tooltip title="Account">
+              <IconButton onClick={e => setAnchorEl(e.currentTarget)} size="small">
+                <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(user?.role), fontSize: '0.75rem' }}>
+                  {getInitials(user?.full_name)}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+          )}
         </Toolbar>
       </AppBar>
 
+      {/* User menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { minWidth: 200, mt: 1 } }}
+      >
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="body2" fontWeight={600}>{user?.full_name}</Typography>
+          <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
+        </Box>
+        <Divider />
+        <MenuItem onClick={() => { setAnchorEl(null); logout() }} sx={{ color: 'error.main', gap: 1 }}>
+          <LogoutIcon fontSize="small" />
+          Sign out
+        </MenuItem>
+      </Menu>
+
+      {/* Sidebar */}
       {isMobile ? (
         <Drawer
           variant="temporary"
@@ -125,14 +188,24 @@ export default function Layout() {
           sx={{
             width: DRAWER_WIDTH,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
+            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', top: 0 },
           }}
         >
           {drawer}
         </Drawer>
       )}
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: { xs: 2, md: 3 },
+          mt: '56px',
+          ml: { md: 0 },
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
