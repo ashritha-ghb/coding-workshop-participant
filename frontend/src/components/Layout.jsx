@@ -15,7 +15,6 @@ import {
   School as TrainingIcon,
   Menu as MenuIcon,
   Logout as LogoutIcon,
-  KeyboardArrowDown,
 } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
 
@@ -107,23 +106,6 @@ export default function Layout() {
           })}
         </List>
       </Box>
-
-      {/* User section at bottom */}
-      <Box sx={{ px: 1.5, py: 2, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1, borderRadius: 2, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
-          onClick={e => setAnchorEl(e.currentTarget)}
-        >
-          <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(user?.role), fontSize: '0.75rem' }}>
-            {getInitials(user?.full_name)}
-          </Avatar>
-          <Box flex={1} minWidth={0}>
-            <Typography variant="body2" fontWeight={600} noWrap>{user?.full_name}</Typography>
-            <Chip label={user?.role} size="small" color={ROLE_COLORS[user?.role] || 'default'} sx={{ height: 16, fontSize: '0.65rem' }} />
-          </Box>
-          <KeyboardArrowDown fontSize="small" sx={{ color: 'text.secondary' }} />
-        </Box>
-      </Box>
     </Box>
   )
 
@@ -147,15 +129,19 @@ export default function Layout() {
           <Typography variant="subtitle1" fontWeight={600} sx={{ flexGrow: 1, color: 'text.primary' }}>
             {visibleNav.find(n => n.path === location.pathname)?.label || 'ACME HR Platform'}
           </Typography>
-          {!isMobile && (
-            <Tooltip title="Account">
-              <IconButton onClick={e => setAnchorEl(e.currentTarget)} size="small">
-                <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(user?.role), fontSize: '0.75rem' }}>
-                  {getInitials(user?.full_name)}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-          )}
+          <Chip
+            label={user?.role}
+            size="small"
+            color={ROLE_COLORS[user?.role] || 'default'}
+            sx={{ mr: 1, textTransform: 'capitalize' }}
+          />
+          <Tooltip title={user?.full_name}>
+            <IconButton onClick={e => setAnchorEl(e.currentTarget)} size="small">
+              <Avatar sx={{ width: 32, height: 32, bgcolor: getAvatarColor(user?.role), fontSize: '0.75rem' }}>
+                {getInitials(user?.full_name)}
+              </Avatar>
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
