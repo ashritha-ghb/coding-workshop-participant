@@ -16,15 +16,18 @@ api.interceptors.request.use(config => {
   return config
 })
 
-// Redirect to login on 401
+// On 401 — clear token and redirect cleanly
 api.interceptors.response.use(
   res => res,
-  err => {
-    if (err.response?.status === 401) {
+  error => {
+    if (error.response?.status === 401) {
       localStorage.removeItem('acme_token')
-      window.location.href = '/login'
+      // Only redirect if not already on login/register
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.replace('/login')
+      }
     }
-    return Promise.reject(err)
+    return Promise.reject(error)
   }
 )
 
