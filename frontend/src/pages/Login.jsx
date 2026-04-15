@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import {
   Box, Card, CardContent, TextField, Button, Typography,
-  Alert, CircularProgress, InputAdornment, IconButton,
+  Alert, CircularProgress, InputAdornment, IconButton, Link,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [apiError, setApiError] = useState('')
@@ -105,6 +107,11 @@ export default function Login() {
             >
               {loading ? <CircularProgress size={22} color="inherit" /> : 'Sign In'}
             </Button>
+            <Box textAlign="center" mt={2}>
+              <Link component="button" variant="body2" onClick={() => navigate('/register')}>
+                Don't have an account? Create one
+              </Link>
+            </Box>
           </Box>
         </CardContent>
       </Card>
