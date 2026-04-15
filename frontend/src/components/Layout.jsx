@@ -129,7 +129,15 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar position="fixed" elevation={0} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          zIndex: theme.zIndex.drawer + 1,
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          ml: { md: `${DRAWER_WIDTH}px` },
+        }}
+      >
         <Toolbar sx={{ minHeight: '56px !important' }}>
           {isMobile && (
             <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 1, color: 'text.primary' }}>
@@ -188,7 +196,10 @@ export default function Layout() {
           sx={{
             width: DRAWER_WIDTH,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', top: 0 },
+            '& .MuiDrawer-paper': {
+              width: DRAWER_WIDTH,
+              boxSizing: 'border-box',
+            },
           }}
         >
           {drawer}
@@ -201,7 +212,8 @@ export default function Layout() {
           flexGrow: 1,
           p: { xs: 2, md: 3 },
           mt: '56px',
-          ml: { md: 0 },
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          ml: { md: `${DRAWER_WIDTH}px` },
           maxWidth: '100%',
           overflow: 'hidden',
         }}
