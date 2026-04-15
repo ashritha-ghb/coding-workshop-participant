@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from '/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { CircularProgress, Box } from '@mui/material'
+import { useAuth } from './context/AuthContext'
+import Layout from './components/Layout'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Employees from './pages/Employees'
+import EmployeeDetail from './pages/EmployeeDetail'
+import PerformanceReviews from './pages/PerformanceReviews'
+import DevelopmentPlans from './pages/DevelopmentPlans'
+import Competencies from './pages/Competencies'
+import TrainingRecords from './pages/TrainingRecords'
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute({ children, minRole }) {
+  const { user, loading, hasRole } = useAuth()
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (!user) return <Navigate to="/login" replace />
+  if (minRole && !hasRole(minRole)) return <Navigate to="/" replace />
+
+  return children
 }
 
-export default App
+export default function App() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <Layout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="employees" element={<PrivateRoute minRole="manager"><Employees /></PrivateRoute>} />
+        <Route path="employees/:id" element={<PrivateRoute><EmployeeDetail /></PrivateRoute>} />
+        <Route path="reviews" element={<PrivateRoute><PerformanceReviews /></PrivateRoute>} />
+        <Route path="plans" element={<PrivateRoute><DevelopmentPlans /></PrivateRoute>} />
+        <Route path="competencies" element={<PrivateRoute><Competencies /></PrivateRoute>} />
+        <Route path="training" element={<PrivateRoute><TrainingRecords /></PrivateRoute>} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

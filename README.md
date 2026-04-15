@@ -1,113 +1,148 @@
-# Coding Workshop
+# ACME Employee Performance Platform
 
-The goal of this coding workshop is to enable and assess the hands-on skills
-of participants through development of a practical technical solution that
-solves a theoretical business problem.
+A centralized web application for tracking employee performance, development plans,
+competencies, and training records across ACME Inc.
 
-## Getting Started
+## What's in here
 
-Navigate to [Coding Workshop - Main Guide](./docs/README.md) to get started.
+```
+├── backend/
+│   ├── common/              # Shared DB connection and JWT helpers
+│   ├── auth/                # Login, register, token refresh
+│   ├── employees/           # Employee profiles
+│   ├── performance-reviews/ # Review history and ratings
+│   ├── development-plans/   # Career goals and progress
+│   ├── competencies/        # Skills and gap tracking
+│   ├── training-records/    # Training activities
+│   └── tests/               # pytest unit tests
+├── frontend/
+│   └── src/
+│       ├── context/         # Auth state (JWT + role)
+│       ├── services/        # Axios API client
+│       ├── components/      # Layout, DataTable, ConfirmDialog
+│       └── pages/           # One file per route
+├── infra/                   # Terraform — Lambda, Aurora, S3, CloudFront
+└── bin/                     # Shell scripts for local dev and deploy
+```
 
-## Coding Workshop Example
+## Local Development
 
-Coding workshop organizer(s) will provide instructions to follow by email. Here
-below is a real example of requirements and expectations for participant(s):
+### Prerequisites
 
-### Requirements: Business Problem
+- Node.js 18+
+- Python 3.11+
+- PostgreSQL
+- Docker (for LocalStack)
+- LocalStack CLI (`pip install localstack`)
+- AWS CLI + Terraform
 
-Our company ACME Inc. is going through a massive organizational transformation
-to become a more data-driven organization. Information about teams structure
-and performance is currently scattered across multiple systems, making it
-difficult to get a comprehensive view of team dynamics and achievements.
+### Setup
 
-We are struggling to answer simple questions like:
+```sh
+# Set your workshop credentials
+echo "export AWS_REGION='ap-south-1'" >> ~/.bashrc
+echo "export EVENT_ID='4f74fc2f'" >> ~/.bashrc
+echo "export PARTICIPANT_ID='b924649a'" >> ~/.bashrc
+echo "export PARTICIPANT_CODE='Excited-Baw\$Bjle-Piglet'" >> ~/.bashrc
+source ~/.bashrc
 
-* Who are the members of each team?
-* Where are the teams located?
-* What are the key achievements of each team on a monthly basis?
-* How many teams have team leader not co-located with team members?
-* How many teams have team leader as a non-direct staff?
-* How many teams have non-direct staff to employees ratio above 20%?
-* How many teams are reporting to an organization leader?
+./bin/setup-participant.sh
+./bin/setup-environment.sh
+```
 
-### Requirements: Technical Solution
+### Start everything locally
 
-As part of this transformation, we are looking to build a centralized team
-management tool that will allow us to track team members, team locations,
-monthly team achievements, as well as individual-level and team-level metadata.
-Initial focus is to provide a self-service capability without any integrations
-with other tools such as Employee Directory, Project Tracking, or Performance
-Management.
+```sh
+./bin/start-dev.sh
+```
 
-The technical solution involves developing a stand-alone web application using
-modern technologies. The application will have the following features:
+This starts PostgreSQL, LocalStack, deploys Lambda functions, and starts the React dev server.
 
-* User authentication and authorization
-* Role-based access control
-* CRUD operations for individuals, teams, achievements and metadata
-* Search and filter functionality
-* Responsive design for mobile and desktop usage
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001/api
 
-### Requirements: Technology Stack
+### First login
 
-The following technologies are required to build the application:
+Register an admin account first:
 
-* Frontend: HTML, CSS, React.js with React Responsive and Material UI Components
-* Backend: Python
-* Database: PostgreSQL
+```sh
+curl -X POST http://localhost:3001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@acme.com","password":"Admin1234!","full_name":"Admin User","role":"admin"}'
+```
 
-The following technologies are good to know, as they are used to manage and
-deploy code:
+Then log in at http://localhost:3000.
 
-* Version Control: Git, GitHub
-* Infrastructure: Terraform
-* Deployment Mode: Shell Scripts
-* Deployment Target: AWS Serverless (e.g., S3, CloudFront, Lambda, DocumentDB)
+## API Endpoints
 
-### Expectations: Value-Based Outcomes
+All endpoints require `Authorization: Bearer <token>` except `/auth/login` and `/auth/register`.
 
-By the end of the workshop, participants will have developed a functional
-web application that meets the requirements outlined above. The application
-will be deployed to a cloud environment and accessible via a web browser.
-Participants will also gain hands-on experience with modern web development
-technologies and best practices.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/login` | Login, returns JWT |
+| POST | `/auth/register` | Register new user |
+| POST | `/auth/refresh` | Refresh token |
+| GET | `/auth/me` | Current user info |
+| GET/POST | `/employees` | List / create employees |
+| GET/PUT/DELETE | `/employees/:id` | Get / update / delete employee |
+| GET/POST | `/performance-reviews` | List / create reviews |
+| GET/PUT/DELETE | `/performance-reviews/:id` | Get / update / delete review |
+| GET/POST | `/development-plans` | List / create plans |
+| GET/PUT/DELETE | `/development-plans/:id` | Get / update / delete plan |
+| GET/POST | `/competencies` | List / create competency records |
+| GET/PUT/DELETE | `/competencies/:id` | Get / update / delete record |
+| GET/POST | `/training-records` | List / create training records |
+| GET/PUT/DELETE | `/training-records/:id` | Get / update / delete record |
 
-## Contributing
+### Role permissions
 
-See the [CONTRIBUTING](./CONTRIBUTING.md) resource for more details.
+| Role | Can do |
+|------|--------|
+| Admin | Everything including delete employees and manage users |
+| Manager | Full CRUD on all records, create/update employees |
+| Contributor | Create and update records, read employees |
+| Viewer | Read-only access to own records |
 
-## License
+## Running Tests
 
-This library is licensed under the MIT-0 License.
-See the [LICENSE](./LICENSE) resource for more details.
+```sh
+pip install pytest pytest-cov psycopg[binary] bcrypt
+pytest backend/tests/ -v --cov=backend
+```
 
-## Roadmap
+## Deploy to AWS
 
-See the
-[open issues](https://github.com/eistrati/coding-workshop-participant/issues)
-for a list of proposed roadmap features (and known issues).
+```sh
+# Backend (Lambda + Aurora PostgreSQL)
+./bin/deploy-backend.sh
 
-## Security
+# Frontend (S3 + CloudFront)
+./bin/deploy-frontend.sh
+```
 
-See the
-[Security Issue Notifications](./CONTRIBUTING.md#security-issue-notifications)
-resource for more details.
+After deploy, the CloudFront URL is printed to the terminal.
 
-## Authors
+## Clean Up
 
-The following people have contributed to this workshop:
+```sh
+./bin/clean-up.sh
+```
 
-* Colin Heilman - [@heilmancs](https://github.com/heilmancs)
-* Eugene Istrati - [@eistrati](https://github.com/eistrati)
-* Isaiah Cornelius Smith - [@corneliusmith](https://github.com/corneliusmith)
-* Juan Arevalo - [@jparevalo27](https://github.com/jparevalo27)
-* Michael Annucci - [@michael-annucci](https://github.com/michael-annucci)
+Removes all AWS resources. Cannot be undone.
 
-## Feedback
+## Self-Assessment
 
-We'd love to hear your feedback! Please:
+**Implemented:**
+- JWT authentication with bcrypt password hashing
+- Role-based access control (Admin / Manager / Contributor / Viewer)
+- Full CRUD for all 5 domains: employees, performance reviews, development plans, competencies, training records
+- Search and filter on all list endpoints and pages
+- Responsive layout using MUI + react-responsive breakpoints
+- Form validation with inline error messages
+- Loading states and user-friendly error handling
+- Shared backend utilities to avoid code duplication across services
 
-* ⭐ Star the repository if you find it helpful
-* 🐛 Report issues on GitHub
-* 💡 Suggest improvements
-* 📝 Share your experience
+**Known limitations:**
+- Employee ID is entered manually in forms — a real app would use a dropdown populated from the employees list
+- No email notifications on review submission
+- Token refresh is manual — a background refresh interval would improve UX
