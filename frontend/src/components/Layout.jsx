@@ -117,7 +117,7 @@ export default function Layout() {
         sx={{
           zIndex: theme.zIndex.drawer + 1,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { md: `${DRAWER_WIDTH}px` },
+          left: { md: `${DRAWER_WIDTH}px` },
         }}
       >
         <Toolbar sx={{ minHeight: '56px !important' }}>
@@ -197,11 +197,10 @@ export default function Layout() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, md: 3 },
-          mt: '56px',
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { md: `${DRAWER_WIDTH}px` },
-          maxWidth: '100%',
-          overflow: 'hidden',
+          pt: { xs: '72px', md: '72px' },
+          minWidth: 0,
+          overflow: 'auto',
+          minHeight: '100vh',
         }}
       >
         <Outlet />
