@@ -97,15 +97,11 @@ def handler(event=None, context=None):
 
 
 def _list(event):
-    caller = require_role(event, "viewer")
+    require_role(event, "viewer")
     params = event.get("queryStringParameters") or {}
 
     conditions = []
     values = []
-
-    if caller["role"] in ("viewer", "contributor"):
-        conditions.append("employee_id = %s")
-        values.append(caller["sub"])
 
     if params.get("employee_id"):
         conditions.append("employee_id = %s")
@@ -125,16 +121,12 @@ def _list(event):
 
 
 def _get(event, comp_id):
-    caller = require_role(event, "viewer")
+    require_role(event, "viewer")
     rows = run_query("SELECT * FROM competencies WHERE id = %s", [comp_id], fetch=True)
     if not rows:
         return err("Competency record not found", 404)
 
-    comp = rows[0]
-    if caller["role"] in ("viewer", "contributor") and str(comp["employee_id"]) != caller["sub"]:
-        return err("Access denied", 403)
-
-    return ok(comp)
+    return ok(rows[0])
 
 
 def _create(event):

@@ -94,15 +94,11 @@ def handler(event=None, context=None):
 
 
 def _list(event):
-    caller = require_role(event, "viewer")
+    require_role(event, "viewer")
     params = event.get("queryStringParameters") or {}
 
     conditions = []
     values = []
-
-    if caller["role"] in ("viewer", "contributor"):
-        conditions.append("employee_id = %s")
-        values.append(caller["sub"])
 
     if params.get("employee_id"):
         conditions.append("employee_id = %s")
@@ -123,16 +119,12 @@ def _list(event):
 
 
 def _get(event, record_id):
-    caller = require_role(event, "viewer")
+    require_role(event, "viewer")
     rows = run_query("SELECT * FROM training_records WHERE id = %s", [record_id], fetch=True)
     if not rows:
         return err("Training record not found", 404)
 
-    record = rows[0]
-    if caller["role"] in ("viewer", "contributor") and str(record["employee_id"]) != caller["sub"]:
-        return err("Access denied", 403)
-
-    return ok(record)
+    return ok(rows[0])
 
 
 def _create(event):
