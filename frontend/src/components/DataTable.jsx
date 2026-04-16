@@ -3,58 +3,72 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Paper, IconButton, Tooltip, Typography, Box,
 } from '@mui/material'
-import { Edit, Delete } from '@mui/icons-material'
+import { Edit, Delete, InboxOutlined } from '@mui/icons-material'
 
-/**
- * Generic data table used across all list pages.
- * columns: [{ key, label, render? }]
- * rows: array of objects
- * onEdit / onDelete: optional callbacks — hidden when not provided
- */
 export default function DataTable({ columns, rows, onEdit, onDelete, emptyMessage = 'No records found' }) {
   if (!rows.length) {
     return (
-      <Box py={6} textAlign="center">
-        <Typography color="text.secondary">{emptyMessage}</Typography>
-      </Box>
+      <Paper variant="outlined" sx={{ borderRadius: 2 }}>
+        <Box py={8} textAlign="center">
+          <InboxOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 1.5 }} />
+          <Typography variant="body1" color="text.secondary" fontWeight={500}>{emptyMessage}</Typography>
+          <Typography variant="caption" color="text.disabled">Add your first record to get started</Typography>
+        </Box>
+      </Paper>
     )
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
+    <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
       <Table size="small">
         <TableHead>
-          <TableRow sx={{ bgcolor: 'grey.50' }}>
+          <TableRow>
             {columns.map(col => (
-              <TableCell key={col.key} sx={{ fontWeight: 600 }}>{col.label}</TableCell>
+              <TableCell key={col.key}>{col.label}</TableCell>
             ))}
-            {(onEdit || onDelete) && <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>}
+            {(onEdit || onDelete) && (
+              <TableCell align="right">Actions</TableCell>
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.map((row, i) => (
-            <TableRow key={row.id ?? i} hover>
+            <TableRow
+              key={row.id ?? i}
+              hover
+              sx={{ '&:last-child td': { border: 0 } }}
+            >
               {columns.map(col => (
-                <TableCell key={col.key}>
+                <TableCell key={col.key} sx={{ py: 1.5 }}>
                   {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
                 </TableCell>
               ))}
               {(onEdit || onDelete) && (
-                <TableCell align="right">
-                  {onEdit && (
-                    <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => onEdit(row)}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {onDelete && (
-                    <Tooltip title="Delete">
-                      <IconButton size="small" color="error" onClick={() => onDelete(row)}>
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
+                <TableCell align="right" sx={{ py: 1 }}>
+                  <Box display="flex" justifyContent="flex-end" gap={0.5}>
+                    {onEdit && (
+                      <Tooltip title="Edit">
+                        <IconButton
+                          size="small"
+                          onClick={() => onEdit(row)}
+                          sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', bgcolor: 'primary.50' } }}
+                        >
+                          <Edit sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {onDelete && (
+                      <Tooltip title="Delete">
+                        <IconButton
+                          size="small"
+                          onClick={() => onDelete(row)}
+                          sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', bgcolor: 'error.50' } }}
+                        >
+                          <Delete sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
                 </TableCell>
               )}
             </TableRow>

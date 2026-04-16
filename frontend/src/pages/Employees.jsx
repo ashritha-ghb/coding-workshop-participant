@@ -130,9 +130,14 @@ export default function Employees() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Employees</Typography>
+        <Box>
+          <Typography variant="h5" fontWeight={700}>Employees</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {employees.length} {employees.length === 1 ? 'employee' : 'employees'} found
+          </Typography>
+        </Box>
         {hasRole('manager') && (
-          <Button variant="contained" startIcon={<Add />} onClick={openCreate}>
+          <Button variant="contained" startIcon={<Add />} onClick={openCreate} sx={{ borderRadius: 2 }}>
             Add Employee
           </Button>
         )}
@@ -143,7 +148,7 @@ export default function Employees() {
         size="small"
         value={search}
         onChange={e => setSearch(e.target.value)}
-        sx={{ mb: 2, width: 320 }}
+        sx={{ mb: 3, width: { xs: '100%', sm: 360 } }}
         InputProps={{ startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> }}
       />
 
