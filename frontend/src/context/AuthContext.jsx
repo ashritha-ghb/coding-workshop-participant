@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     clearAuth()
-    window.location.replace('/')
+    window.location.replace('/login')
   }, [clearAuth])
 
   // Schedule token refresh 5 minutes before expiry

@@ -26,7 +26,7 @@ api.interceptors.response.use(
       localStorage.removeItem('acme_token')
       // Only redirect if not already on login/register
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-        window.location.replace('/')
+        window.location.replace('/login')
       }
     }
     return Promise.reject(error)

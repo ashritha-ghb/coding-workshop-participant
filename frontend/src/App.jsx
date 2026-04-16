@@ -5,7 +5,6 @@ import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import Unauthorized from './pages/Unauthorized'
 import Dashboard from './pages/Dashboard'
 import Employees from './pages/Employees'
 import EmployeeDetail from './pages/EmployeeDetail'
@@ -25,8 +24,8 @@ function PrivateRoute({ children, minRole }) {
     )
   }
 
-  if (!user) return <Navigate to="/" replace />
-  if (minRole && !hasRole(minRole)) return <Navigate to="/unauthorized" replace />
+  if (!user) return <Navigate to="/login" replace />
+  if (minRole && !hasRole(minRole)) return <Navigate to="/" replace />
 
   return children
 }
@@ -46,7 +45,6 @@ export default function App() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/" replace /> : <Register />} />
-      <Route path="/unauthorized" element={<Unauthorized />} />
       <Route
         path="/"
         element={
