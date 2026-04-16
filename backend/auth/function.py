@@ -37,10 +37,11 @@ def _ensure_table():
             created_at  TIMESTAMP DEFAULT NOW()
         )
     """)
-    # Add employee_id column if it doesn't exist (for existing tables)
-    run_query("""
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_id INTEGER
-    """)
+    # Safely add employee_id column to existing tables
+    try:
+        run_query("ALTER TABLE users ADD COLUMN employee_id INTEGER")
+    except Exception:
+        pass  # Column already exists, ignore
 
 
 def _route(event):
