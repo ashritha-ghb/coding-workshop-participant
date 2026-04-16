@@ -93,11 +93,15 @@ def handler(event=None, context=None):
 
 
 def _list(event):
-    require_role(event, "viewer")
+    caller = require_role(event, "viewer")
     params = event.get("queryStringParameters") or {}
 
     conditions = []
     values = []
+
+    if caller["role"] in ("viewer", "contributor") and caller.get("employee_id"):
+        conditions.append("employee_id = %s")
+        values.append(caller["employee_id"])
 
     if params.get("employee_id"):
         conditions.append("employee_id = %s")
@@ -118,7 +122,7 @@ def _list(event):
 
 
 def _get(event, review_id):
-    require_role(event, "viewer")
+    caller = require_role(event, "viewer")
     rows = run_query(
         "SELECT * FROM performance_reviews WHERE id = %s",
         [review_id], fetch=True
@@ -129,7 +133,12 @@ def _get(event, review_id):
     if not rows:
         return err("Review not found", 404)
 
-    return ok(rows[0])
+    review = rows[0]
+    if caller["role"] in ("viewer", "contributor") and caller.get("employee_id"):
+        if str(review["employee_id"]) != str(caller["employee_id"]):
+            return err("Access denied", 403)
+
+    return ok(review)
 
 
 def _create(event):

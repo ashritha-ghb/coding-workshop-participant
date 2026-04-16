@@ -1,6 +1,6 @@
 """
-JWT helpers shared across all services.
-Tokens carry user_id, email, and role.
+JWT helpers — token creation, verification, and role checking.
+Roles go viewer < contributor < manager < admin.
 """
 
 import os
@@ -29,12 +29,13 @@ def _b64_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * padding)
 
 
-def create_token(user_id: str, email: str, role: str) -> str:
+def create_token(user_id: str, email: str, role: str, employee_id: str = None) -> str:
     header = _b64_encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     payload = _b64_encode(json.dumps({
         "sub": user_id,
         "email": email,
         "role": role,
+        "employee_id": employee_id,
         "iat": int(time.time()),
         "exp": int(time.time()) + TTL,
     }).encode())

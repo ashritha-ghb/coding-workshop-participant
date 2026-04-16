@@ -33,8 +33,13 @@ def _ensure_table():
             password    VARCHAR(255) NOT NULL,
             full_name   VARCHAR(255) NOT NULL,
             role        VARCHAR(50)  NOT NULL DEFAULT 'viewer',
+            employee_id INTEGER,
             created_at  TIMESTAMP DEFAULT NOW()
         )
+    """)
+    # Add employee_id column if it doesn't exist (for existing tables)
+    run_query("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_id INTEGER
     """)
 
 
@@ -88,7 +93,7 @@ def _login(event):
         return err("Email and password are required")
 
     rows = run_query(
-        "SELECT id, email, password, full_name, role FROM users WHERE email = %s",
+        "SELECT id, email, password, full_name, role, employee_id FROM users WHERE email = %s",
         [email], fetch=True
     )
     if not rows:
@@ -100,7 +105,7 @@ def _login(event):
     except VerifyMismatchError:
         return err("Invalid credentials", 401)
 
-    token = create_token(str(user["id"]), user["email"], user["role"])
+    token = create_token(str(user["id"]), user["email"], user["role"], str(user["employee_id"]) if user["employee_id"] else None)
     return ok({
         "token": token,
         "user": {
@@ -108,6 +113,7 @@ def _login(event):
             "email": user["email"],
             "full_name": user["full_name"],
             "role": user["role"],
+            "employee_id": user["employee_id"],
         }
     })
 
@@ -122,6 +128,7 @@ def _register(event):
     password = body.get("password") or ""
     full_name = (body.get("full_name") or "").strip()
     role = (body.get("role") or "viewer").strip().lower()
+    employee_id = body.get("employee_id")  # optional — links user to an employee record
 
     if not email or not password or not full_name:
         return err("email, password, and full_name are required")
@@ -137,8 +144,8 @@ def _register(event):
 
     try:
         run_query(
-            "INSERT INTO users (email, password, full_name, role) VALUES (%s, %s, %s, %s)",
-            [email, hashed, full_name, role]
+            "INSERT INTO users (email, password, full_name, role, employee_id) VALUES (%s, %s, %s, %s, %s)",
+            [email, hashed, full_name, role, employee_id]
         )
     except Exception as e:
         if "unique" in str(e).lower():
@@ -146,11 +153,11 @@ def _register(event):
         raise
 
     rows = run_query(
-        "SELECT id, email, full_name, role FROM users WHERE email = %s",
+        "SELECT id, email, full_name, role, employee_id FROM users WHERE email = %s",
         [email], fetch=True
     )
     user = rows[0]
-    token = create_token(str(user["id"]), user["email"], user["role"])
+    token = create_token(str(user["id"]), user["email"], user["role"], str(user["employee_id"]) if user["employee_id"] else None)
     return ok({"token": token, "user": user}, 201)
 
 
@@ -162,14 +169,14 @@ def _refresh(event):
         return err(str(e), 401)
 
     rows = run_query(
-        "SELECT id, email, full_name, role FROM users WHERE id = %s",
+        "SELECT id, email, full_name, role, employee_id FROM users WHERE id = %s",
         [payload["sub"]], fetch=True
     )
     if not rows:
         return err("User not found", 404)
 
     user = rows[0]
-    new_token = create_token(str(user["id"]), user["email"], user["role"])
+    new_token = create_token(str(user["id"]), user["email"], user["role"], str(user["employee_id"]) if user["employee_id"] else None)
     return ok({"token": new_token, "user": user})
 
 
@@ -181,7 +188,7 @@ def _me(event):
         return err(str(e), 401)
 
     rows = run_query(
-        "SELECT id, email, full_name, role, created_at FROM users WHERE id = %s",
+        "SELECT id, email, full_name, role, employee_id, created_at FROM users WHERE id = %s",
         [payload["sub"]], fetch=True
     )
     if not rows:

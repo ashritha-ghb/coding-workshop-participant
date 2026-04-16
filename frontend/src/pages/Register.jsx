@@ -16,7 +16,7 @@ const ROLES = [
 
 export default function Register() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', role: 'viewer' })
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', role: 'viewer', employee_id: '' })
   const [errors, setErrors] = useState({})
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -38,7 +38,11 @@ export default function Register() {
     setLoading(true)
     setApiError('')
     try {
-      await api.post('/auth/register', { ...form, email: form.email.trim().toLowerCase() })
+      await api.post('/auth/register', {
+        ...form,
+        email: form.email.trim().toLowerCase(),
+        employee_id: form.employee_id ? Number(form.employee_id) : null,
+      })
       navigate('/login')
     } catch (err) {
       setApiError(err.response?.data?.error || 'Registration failed. Try again.')
@@ -133,13 +137,20 @@ export default function Register() {
               error={Boolean(errors.password)} helperText={errors.password || 'Minimum 8 characters'}
             />
             <TextField
-              select label="Role" fullWidth sx={{ mb: 3 }}
+              select label="Role" fullWidth sx={{ mb: 2.5 }}
               value={form.role} onChange={set('role')}
             >
               {ROLES.map(r => (
                 <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
               ))}
             </TextField>
+            <TextField
+              label="Employee ID (optional)"
+              helperText="Enter your employee ID if you are registering as an employee (viewer/contributor)"
+              type="number"
+              fullWidth sx={{ mb: 3 }}
+              value={form.employee_id} onChange={set('employee_id')}
+            />
             <Button
               type="submit" variant="contained" fullWidth size="large"
               disabled={loading}
