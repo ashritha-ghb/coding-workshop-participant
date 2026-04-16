@@ -1,6 +1,6 @@
 """
-Auth service — handles login, token refresh, and user registration.
-Passwords are hashed with bcrypt before storage.
+Auth service — login, registration, token refresh.
+Uses argon2 for password hashing, custom JWT for tokens.
 """
 
 import json

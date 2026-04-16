@@ -1,6 +1,6 @@
 """
-Shared PostgreSQL connection management for all backend services.
-Reuses connections across Lambda invocations within the same container.
+Shared PostgreSQL connection for all Lambda services.
+Uses module-level connection so it persists across warm invocations.
 """
 
 import os

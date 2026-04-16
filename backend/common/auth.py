@@ -1,6 +1,6 @@
 """
-JWT helpers shared across all services.
-Tokens carry user_id, email, and role.
+JWT helpers — token creation, verification, and role checking.
+Roles go viewer < contributor < manager < admin.
 """
 
 import os
