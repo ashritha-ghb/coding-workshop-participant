@@ -47,15 +47,15 @@ const theme = createTheme({
   shape: {
     borderRadius: 10,
   },
-  shadows: [
-    'none',
-    '0 1px 2px rgba(0,0,0,0.05)',
-    '0 1px 4px rgba(0,0,0,0.07)',
-    '0 2px 8px rgba(0,0,0,0.08)',
-    '0 4px 12px rgba(0,0,0,0.08)',
-    '0 8px 24px rgba(0,0,0,0.08)',
-    ...Array(19).fill('none'),
-  ],
+  shadows: Array(25).fill('none').map((_, i) => {
+    if (i === 0) return 'none'
+    if (i === 1) return '0 1px 2px rgba(0,0,0,0.05)'
+    if (i === 2) return '0 1px 4px rgba(0,0,0,0.07)'
+    if (i === 3) return '0 2px 8px rgba(0,0,0,0.08)'
+    if (i === 4) return '0 4px 12px rgba(0,0,0,0.08)'
+    if (i === 5) return '0 8px 24px rgba(0,0,0,0.08)'
+    return 'none'
+  }),
   components: {
     MuiButton: {
       styleOverrides: {
