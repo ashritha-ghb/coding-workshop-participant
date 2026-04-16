@@ -1,216 +1,186 @@
-# What We Built — Presentation Guide
+# What We Built — Plain English Guide
 
 This document explains everything you need to know to present this project
 confidently to evaluators. Read it fully before your presentation.
 
 ---
 
-## What is this project?
+## The Problem We Solved
 
-We built a **web application** for a company called ACME Inc. to manage
-employee performance. Think of it like an internal HR tool where:
+ACME Inc. had no central system to track:
+- How employees are performing
+- What skills they are missing
+- What training they have completed
+- What their career goals are
 
-- Managers can write performance reviews for their team
-- Employees can see their own feedback and career goals
-- HR can track who has skill gaps and who needs training
-- Admins can manage everything
+Everything was in spreadsheets and emails. Managers had no visibility.
 
-The app runs on the internet (deployed to AWS) and anyone with a login can
-access it from a browser.
-
----
-
-## The Tech Stack — explained simply
-
-### Frontend (what users see in the browser)
-
-**React.js** — a JavaScript library for building web pages. Instead of writing
-plain HTML, React lets you build reusable components like buttons, forms, and
-tables. Think of it like LEGO blocks for web pages.
-
-**Material UI (MUI)** — a ready-made set of styled components (buttons, cards,
-tables, dialogs) that follow Google's design guidelines. This is why the app
-looks clean and professional without writing custom CSS from scratch.
-
-**React Responsive** — makes the app work on both mobile phones and desktop
-screens. The sidebar collapses into a hamburger menu on small screens.
-
-**Vite** — the build tool that compiles our React code into files the browser
-can understand. Like a compiler for frontend code.
+**We built a web application that solves all of this.**
 
 ---
 
-### Backend (the server logic)
+## What the Application Does
 
-**Python** — the programming language used for all server-side code. Each
-feature (auth, employees, reviews, etc.) is a separate Python file.
+When you open the app, you see a login page. After logging in, you get a
+dashboard showing a summary of all activity. From the sidebar you can navigate to:
 
-**AWS Lambda** — instead of running a traditional server 24/7, Lambda runs
-our Python code only when someone makes a request. It scales automatically
-and we only pay for what we use. This is called "serverless".
+- **Employees** — view and manage employee profiles
+- **Performance Reviews** — track review history and ratings for each employee
+- **Development Plans** — set career goals and track progress
+- **Competencies** — record skill levels and identify gaps
+- **Training Records** — log courses, certifications, and workshops
 
-**PostgreSQL** — the database where all data is stored. Tables for users,
-employees, reviews, plans, competencies, and training records.
-
-**AWS Aurora** — Amazon's managed PostgreSQL service. It handles backups,
-scaling, and availability automatically.
-
----
-
-### Infrastructure (how it's deployed)
-
-**Terraform** — a tool that describes AWS resources (Lambda, S3, CloudFront,
-Aurora) as code. Instead of clicking through the AWS console, we write
-configuration files and Terraform creates everything automatically.
-
-**AWS S3** — stores the built React app files (HTML, CSS, JavaScript).
-
-**AWS CloudFront** — a CDN (Content Delivery Network) that serves the frontend
-files fast from locations close to the user. It also handles HTTPS.
-
-**Shell Scripts** — the `bin/` folder has scripts like `deploy-backend.sh`
-and `deploy-frontend.sh` that automate the deployment process.
-
-**LocalStack** — a tool that runs fake AWS services on your laptop for
-development. So you can test Lambda, S3, etc. without spending money on real AWS.
+Every page lets you create, view, edit, and delete records. You can also
+search and filter to find specific data quickly.
 
 ---
 
-## How the app works — the flow
+## Who Can Do What (Roles)
 
-```
-User opens browser
-    → CloudFront serves the React app from S3
-    → User logs in → React sends request to CloudFront
-    → CloudFront routes /api/auth to the auth Lambda
-    → Lambda checks credentials against Aurora PostgreSQL
-    → Lambda returns a JWT token
-    → React stores the token and shows the dashboard
-```
-
-Every subsequent action (create review, add employee, etc.) follows the same
-pattern — React sends a request with the token, Lambda verifies it, does the
-database operation, returns the result.
-
----
-
-## Authentication and Roles — explained
-
-**JWT (JSON Web Token)** — when you log in, the server gives you a "ticket"
-(the token). This ticket is signed so it can't be faked. You include this
-ticket in every request to prove who you are. The ticket expires after 1 hour.
-
-**RBAC (Role-Based Access Control)** — different users have different
-permissions based on their role:
+The app has four types of users:
 
 | Role | What they can do |
 |------|-----------------|
-| Admin | Everything — create, read, update, delete, manage users |
-| Manager | Manage all records and employees, but can't delete employees |
-| Contributor | Create and update records, but can't delete |
-| Viewer | Read-only — can only see their own records |
+| **Admin** | Everything — manage users, delete records, full access |
+| **Manager** | Create and manage all records, manage employees |
+| **Contributor** | Create and update records, but cannot delete |
+| **Viewer** | Read-only — can only see their own records |
 
-This is enforced in two places:
-1. **Backend** — the Lambda checks the role before doing anything
-2. **Frontend** — buttons and menu items are hidden if you don't have permission
-
----
-
-## The 6 Backend Services
-
-Each service is a Python file that handles one area of the app:
-
-**auth** — handles login, registration, and token management. Passwords are
-hashed using argon2 (a secure algorithm) before storing in the database.
-
-**employees** — stores employee profiles: name, email, department, job title,
-hire date, manager, employment status.
-
-**performance-reviews** — stores review cycles with ratings like
-"exceeds expectations", scores, strengths, areas to improve, and goals.
-
-**development-plans** — tracks career goals with target roles, milestones,
-progress percentage, and status (not started, in progress, completed).
-
-**competencies** — tracks skill levels (1=beginner to 5=expert) per employee
-per skill. Automatically calculates the gap between current and target level.
-
-**training-records** — logs training activities: courses, certifications,
-workshops, with completion dates and scores.
+This is called **Role-Based Access Control (RBAC)**. The system automatically
+shows or hides buttons based on who is logged in. A viewer will never see a
+Delete button. A contributor will not see the Employees menu.
 
 ---
 
-## What the evaluators will check
+## The Tech Stack — What Each Technology Does
 
-1. **Open the live URL** — https://d2uu9oauk54q2c.cloudfront.net
-2. **Register an account** and log in
-3. **Create an employee** — go to Employees → Add Employee
-4. **Create a performance review** — go to Performance Reviews → New Review
-5. **Check role-based access** — log in as different roles and verify
-   that buttons appear/disappear correctly
-6. **Test search and filter** — type in the search box on any list page
-7. **Check responsive design** — resize the browser window to mobile size
+### React.js (Frontend)
+React is a JavaScript library for building user interfaces. Think of it as
+the "face" of the application — everything the user sees and clicks on.
 
----
+We used **Material UI** for the design components (buttons, tables, forms,
+cards) so the app looks professional without writing CSS from scratch.
 
-## Questions evaluators might ask — and how to answer
+We used **React Responsive** to make the layout work on both mobile phones
+and desktop screens.
 
-**Q: Why did you use Lambda instead of a traditional server?**
-A: Lambda is serverless — it scales automatically, costs nothing when idle,
-and fits the AWS Serverless requirement in the assignment. Each service is
-independent so they can scale separately.
+### Python (Backend)
+Python handles all the business logic — validating data, checking permissions,
+reading and writing to the database. Each feature (auth, employees, reviews,
+etc.) is a separate Python file called a **Lambda function**.
 
-**Q: Why PostgreSQL and not MongoDB?**
-A: The assignment specified PostgreSQL. It's a relational database which suits
-structured data like employee records and reviews where relationships between
-tables matter.
+### PostgreSQL (Database)
+PostgreSQL is where all the data is stored permanently. Employee records,
+reviews, plans, competencies, training — all stored in tables in PostgreSQL.
 
-**Q: How does authentication work?**
-A: Users log in with email and password. The password is hashed with argon2
-before storage. On login, we verify the hash and return a JWT token. The token
-is signed with a secret key and contains the user's ID, email, and role. Every
-API request includes this token in the Authorization header.
+### AWS Lambda
+Instead of running a traditional server 24/7, we use Lambda. Lambda runs
+our Python code only when someone makes a request, then shuts down. This
+is called **serverless** — you don't manage servers, AWS does it for you.
 
-**Q: How is role-based access implemented?**
-A: Each Lambda function calls `require_role(event, "minimum_role")` at the
-start. This extracts the JWT from the request, verifies it, and checks if the
-caller's role rank is sufficient. If not, it returns 403. The frontend also
-hides UI elements based on role, but the backend is the authoritative check.
+### AWS Aurora
+Aurora is Amazon's managed PostgreSQL database. It scales automatically
+and we don't need to manage the database server ourselves.
 
-**Q: What happens if the database is down?**
-A: The Lambda catches the connection error and returns a 500 response with
-a clear error message. The connection is reset so the next request tries again.
+### AWS S3 + CloudFront
+S3 stores the built React application files. CloudFront is a CDN (Content
+Delivery Network) that serves those files to users quickly from locations
+around the world. The live URL `https://d2uu9oauk54q2c.cloudfront.net`
+is the CloudFront address.
 
-**Q: How did you handle CORS?**
-A: In production, CloudFront handles routing so there are no CORS issues.
-Locally, a Node.js proxy server forwards requests from the React dev server
-to the Lambda URLs, stripping browser headers that cause CORS problems.
+### Terraform
+Terraform is a tool that creates all the AWS infrastructure automatically
+by reading configuration files. Instead of clicking through the AWS console
+to create Lambda functions, databases, and CloudFront distributions, we
+describe what we want in `.tf` files and Terraform creates it.
 
----
-
-## Key numbers to remember
-
-- **6 backend services** — auth, employees, performance-reviews,
-  development-plans, competencies, training-records
-- **4 user roles** — admin, manager, contributor, viewer
-- **8 frontend pages** — login, register, dashboard, employees, employee
-  detail, performance reviews, development plans, competencies, training records
-- **30 unit tests** — covering auth, employees, competencies, performance
-  reviews, and development plans
-- **Live URL** — https://d2uu9oauk54q2c.cloudfront.net
+### Git and GitHub
+Git tracks all code changes. GitHub stores the code online. Every change
+we made was committed and pushed to GitHub so there is a full history.
 
 ---
 
-## How to demo the app
+## How the Application Works — Step by Step
 
-1. Open https://d2uu9oauk54q2c.cloudfront.net
+1. User opens `https://d2uu9oauk54q2c.cloudfront.net` in their browser
+2. CloudFront serves the React app from S3
+3. User enters email and password and clicks Sign In
+4. React sends the credentials to the auth Lambda function
+5. Lambda checks the password against the database
+6. If correct, Lambda returns a **JWT token** (a secure string that proves identity)
+7. React stores the token and uses it for all future requests
+8. When the user navigates to Performance Reviews, React calls the reviews Lambda
+9. The Lambda checks the token, verifies the user's role, queries PostgreSQL, and returns data
+10. React displays the data in a table
+
+---
+
+## What is a JWT Token?
+
+JWT stands for JSON Web Token. It is a secure string that contains:
+- Who you are (user ID and email)
+- What role you have (admin, manager, etc.)
+- When it expires (after 1 hour)
+
+It is signed with a secret key so it cannot be faked. Every API request
+includes this token in the header so the server knows who is making the request.
+
+---
+
+## The Live Application
+
+**URL:** https://d2uu9oauk54q2c.cloudfront.net
+
+To demonstrate to evaluators:
+1. Open the URL in a browser
 2. Click "Don't have an account? Create one"
-3. Register as admin: email `admin@acme.com`, password `Admin1234!`, role `admin`
-4. Log in — you'll see the dashboard
-5. Go to Employees → Add Employee → fill in the form → Save
-6. Go to Performance Reviews → New Review → use the employee ID you just created
-7. Go to Competencies → Add Competency → set current level 2, target level 5
-   → notice the gap shows as 3
-8. Log out → register a new account with role `viewer`
-9. Log in as viewer → notice Employees menu is gone, no create buttons visible
-10. This demonstrates RBAC working correctly
+3. Register with role `admin`
+4. Log in and show the dashboard
+5. Create an employee record
+6. Create a performance review for that employee
+7. Add a competency with a skill gap
+8. Log out and register a new account with role `viewer`
+9. Log in as viewer — show that they can only read, no create/edit/delete buttons
+
+---
+
+## Key Points to Mention in Presentation
+
+- **Serverless architecture** — no servers to manage, scales automatically
+- **Role-based access control** — different users see different things
+- **JWT authentication** — secure, stateless, industry standard
+- **PostgreSQL** — relational database, data persists reliably
+- **Infrastructure as Code** — Terraform creates all AWS resources from config files
+- **Responsive design** — works on mobile and desktop
+- **Automated tests** — 30 unit tests covering auth, employees, competencies
+
+---
+
+## If Evaluators Ask Questions
+
+**"Why did you choose Lambda over a traditional server?"**
+Lambda is serverless — it scales automatically, costs nothing when idle,
+and AWS manages all the infrastructure. It is the modern standard for
+building APIs on AWS.
+
+**"How does authentication work?"**
+Users log in with email and password. The password is hashed using argon2
+before storage so it is never stored in plain text. On login, we verify
+the hash and return a JWT token. Every subsequent request includes that
+token so the server knows who is calling.
+
+**"How do you prevent unauthorized access?"**
+Every Lambda function checks the JWT token and the user's role before
+doing anything. If the role is insufficient, it returns 403 Forbidden.
+The frontend also hides buttons the user cannot use, but the real
+enforcement is always on the backend.
+
+**"What database did you use and why?"**
+PostgreSQL via AWS Aurora Serverless. PostgreSQL is a reliable, widely-used
+relational database. Aurora Serverless means it scales to zero when not in
+use and scales up automatically under load — no manual capacity planning.
+
+**"How is the frontend deployed?"**
+The React app is built into static files and uploaded to S3. CloudFront
+serves those files globally with HTTPS. This is the standard AWS pattern
+for hosting single-page applications.
