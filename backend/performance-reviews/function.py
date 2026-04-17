@@ -130,9 +130,6 @@ def _get(event, review_id):
     if not rows:
         return err("Review not found", 404)
 
-    if not rows:
-        return err("Review not found", 404)
-
     review = rows[0]
     if caller["role"] in ("viewer", "contributor") and caller.get("employee_id"):
         if str(review["employee_id"]) != str(caller["employee_id"]):
@@ -142,7 +139,7 @@ def _get(event, review_id):
 
 
 def _create(event):
-    require_role(event, "manager")
+    caller = require_role(event, "manager")
 
     try:
         body = json.loads(event.get("body") or "{}")
@@ -156,8 +153,6 @@ def _create(event):
 
     if body["overall_rating"] not in VALID_RATINGS:
         return err(f"overall_rating must be one of: {', '.join(sorted(VALID_RATINGS))}")
-
-    caller = require_role(event, "manager")
 
     run_query(
         """INSERT INTO performance_reviews
