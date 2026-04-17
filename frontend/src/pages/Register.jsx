@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Box, TextField, Button, Typography, Alert,
-  CircularProgress, MenuItem, Link, Divider,
+  CircularProgress, Link, Divider,
+  FormControl, InputLabel, Select, MenuItem, FormHelperText,
 } from '@mui/material'
 import { PersonAddOutlined } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
@@ -136,14 +137,19 @@ export default function Register() {
               value={form.password} onChange={set('password')}
               error={Boolean(errors.password)} helperText={errors.password || 'Minimum 8 characters'}
             />
-            <TextField
-              select label="Role" fullWidth sx={{ mb: 2.5 }}
-              value={form.role} onChange={set('role')}
-            >
-              {ROLES.map(r => (
-                <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
-              ))}
-            </TextField>
+            <FormControl fullWidth sx={{ mb: 2.5 }}>
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                labelId="role-label"
+                label="Role"
+                value={form.role}
+                onChange={set('role')}
+              >
+                {ROLES.map(r => (
+                  <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               label="Employee ID (optional)"
               helperText="Enter your employee ID if you are registering as an employee (viewer/contributor)"
